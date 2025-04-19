@@ -87,6 +87,25 @@ var _ = Describe("jwx pkg:", func() {
 			Expect(res).To(BeNil())
 		})
 	})
+
+	Context("GetTokenHeader", func() {
+		It("should return header for a valid token", func() {
+			data, _ := json.Marshal(claims.Registered)
+			obj, _ := signer.Sign(data)
+			token, _ := obj.CompactSerialize()
+
+			res, err := jwx.GetTokenHeader(token)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res.Algorithm).ToNot(BeEmpty())
+		})
+
+		It("should return an error if the token is invalid", func() {
+			invalidToken := "not.a.jwt"
+			res, err := jwx.GetTokenHeader(invalidToken)
+			Expect(err).To(HaveOccurred())
+			Expect(res).To(BeNil())
+		})
+	})
 })
 
 func TestStdin(t *testing.T) {
