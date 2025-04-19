@@ -3,6 +3,8 @@ module github.com/tmsmr/jwtee
 go 1.24
 
 require (
+	github.com/go-faker/faker/v4 v4.6.0
+	github.com/go-jose/go-jose/v4 v4.1.0
 	github.com/lmittmann/tint v1.0.7
 	github.com/mattn/go-colorable v0.1.14
 	github.com/onsi/ginkgo/v2 v2.23.4
