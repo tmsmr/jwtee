@@ -40,27 +40,27 @@ var _ = Describe("jwx pkg:", func() {
 		}
 	})
 
-	Context("ParseClaimsUnsafe", func() {
+	Context("ParseUnsafe", func() {
 		It("should extract registered claims correctly", func() {
-			data, _ := json.Marshal(claims.Custom)
-			obj, _ := signer.Sign(data)
-			token, _ := obj.CompactSerialize()
-
-			res, err := jwx.ParseClaimsUnsafe(token)
-			Expect(err).ToNot(HaveOccurred())
-			b := res.Custom
-			Expect(b).To(Equal(claims.Custom))
-		})
-
-		It("should extract custom claims correctly", func() {
 			data, _ := json.Marshal(claims.Registered)
 			obj, _ := signer.Sign(data)
 			token, _ := obj.CompactSerialize()
 
-			res, err := jwx.ParseClaimsUnsafe(token)
+			res, err := jwx.ParseUnsafe(token)
 			Expect(err).ToNot(HaveOccurred())
-			b := res.Registered
+			b := res.Claims.Registered
 			Expect(b).To(Equal(claims.Registered))
+		})
+
+		It("should extract custom claims correctly", func() {
+			data, _ := json.Marshal(claims.Custom)
+			obj, _ := signer.Sign(data)
+			token, _ := obj.CompactSerialize()
+
+			res, err := jwx.ParseUnsafe(token)
+			Expect(err).ToNot(HaveOccurred())
+			b := res.Claims.Custom
+			Expect(b).To(Equal(claims.Custom))
 		})
 
 		It("should filter custom claims to not contain registered claims", func() {
@@ -74,41 +74,32 @@ var _ = Describe("jwx pkg:", func() {
 			obj, _ := signer.Sign(data)
 			token, _ := obj.CompactSerialize()
 
-			res, err := jwx.ParseClaimsUnsafe(token)
+			res, err := jwx.ParseUnsafe(token)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Registered).To(Equal(claims.Registered))
-			Expect(res.Custom).To(Equal(claims.Custom))
+			Expect(res.Claims.Registered).To(Equal(claims.Registered))
+			Expect(res.Claims.Custom).To(Equal(claims.Custom))
 		})
 
-		It("should return an error if the token is invalid", func() {
-			invalidToken := "not.a.jwt"
-			res, err := jwx.ParseClaimsUnsafe(invalidToken)
-			Expect(err).To(HaveOccurred())
-			Expect(res).To(BeNil())
-		})
-	})
-
-	Context("GetTokenHeader", func() {
-		It("should return header for a valid token", func() {
+		It("should return the header for a valid token", func() {
 			data, _ := json.Marshal(claims.Registered)
 			obj, _ := signer.Sign(data)
 			token, _ := obj.CompactSerialize()
 
-			res, err := jwx.GetTokenHeader(token)
+			res, err := jwx.ParseUnsafe(token)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Algorithm).ToNot(BeEmpty())
+			Expect(res.Header.Algorithm).ToNot(BeEmpty())
 		})
 
 		It("should return an error if the token is invalid", func() {
 			invalidToken := "not.a.jwt"
-			res, err := jwx.GetTokenHeader(invalidToken)
+			res, err := jwx.ParseUnsafe(invalidToken)
 			Expect(err).To(HaveOccurred())
 			Expect(res).To(BeNil())
 		})
 	})
 })
 
-func TestStdin(t *testing.T) {
+func TestJwx(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "jwx")
 }

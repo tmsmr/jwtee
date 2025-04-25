@@ -1,9 +1,15 @@
 package jwx
 
 import (
+	"errors"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 	"reflect"
 	"strings"
+)
+
+var (
+	ErrMissingHeader = errors.New("missing header in token")
 )
 
 type Claims struct {
@@ -11,11 +17,21 @@ type Claims struct {
 	Custom     map[string]interface{}
 }
 
-func ParseClaimsUnsafe(token string) (*Claims, error) {
+type Jwt struct {
+	Header jose.Header
+	Claims Claims
+}
+
+func ParseUnsafe(token string) (*Jwt, error) {
 	parsed, err := jwt.ParseSigned(token, supportedSignatureAlgs)
 	if err != nil {
 		return nil, err
 	}
+
+	if len(parsed.Headers) == 0 {
+		return nil, ErrMissingHeader
+	}
+	header := parsed.Headers[0]
 
 	registered := jwt.Claims{}
 	custom := map[string]interface{}{}
@@ -31,8 +47,11 @@ func ParseClaimsUnsafe(token string) (*Claims, error) {
 		delete(custom, name)
 	}
 
-	return &Claims{
-		Registered: registered,
-		Custom:     custom,
+	return &Jwt{
+		header,
+		Claims{
+			Registered: registered,
+			Custom:     custom,
+		},
 	}, nil
 }

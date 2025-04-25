@@ -16,11 +16,11 @@ var parseCmd = &cobra.Command{
 		if err != nil {
 			log.Error("Failed to read input", "err", err)
 		}
-		claims, err := jwx.ParseClaimsUnsafe(val)
+		parsed, err := jwx.ParseUnsafe(val)
 		if err != nil {
-			log.Error("Failed to parse claims", "err", err)
+			log.Error("Failed to parse provided token", "err", err)
 		}
-		log.Info("result", "claims", claims)
+		log.Info("result", "parsed", parsed)
 	},
 }
 
